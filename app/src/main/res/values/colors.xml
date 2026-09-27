@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="paper">#EEEBE3</color>
+    <color name="paper2">#F7F5EF</color>
+    <color name="ink">#26241F</color>
+    <color name="ink_dim">#8A8578</color>
+    <color name="line">#D9D4C6</color>
+    <color name="note">#5B6B73</color>
+    <color name="pin">#B8863B</color>
+    <color name="task">#4C7A6B</color>
+    <color name="danger">#B24C3E</color>
+</resources>

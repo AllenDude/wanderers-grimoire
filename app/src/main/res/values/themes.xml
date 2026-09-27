@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.WanderersGrimoire" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/pin</item>
+        <item name="android:windowBackground">@color/paper</item>
+    </style>
+</resources>
