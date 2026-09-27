@@ -24,6 +24,28 @@ using the "Run workflow" button (`workflow_dispatch`).
 This builds a debug APK signed with the default debug key, fine for personal
 use. Not set up for Play Store distribution.
 
+## Updating without uninstalling first
+
+Two things used to break this: every CI build signed the APK with a
+throwaway debug key (fresh machine each time, so Android saw each build as
+a different app and refused to update over the old install), and there was
+no version bump, so even a matching signature could look like the same
+version. Both fixed now:
+
+- `keystore/debug.keystore` is a fixed debug key committed to the repo on
+  purpose (debug keys aren't meant to be secret, and this one is never used
+  for anything but sideloaded personal builds). Every CI build signs with
+  it, so the signature always matches the last install.
+- `versionCode` and `versionName` are passed in from the GitHub Actions run
+  number (`app/build.gradle` reads `buildVersionCode` / `buildVersionName`),
+  so every pushed build is automatically a higher version than the last.
+
+With both matching, installing a new APK over the old one now updates in
+place, no uninstall needed, and everything in local storage (your notes,
+pins, tasks, folders) survives the update same as any normal app update.
+This only breaks again if you uninstall manually, or if `keystore/debug.keystore`
+gets deleted or regenerated.
+
 ## Project layout
 
 ```

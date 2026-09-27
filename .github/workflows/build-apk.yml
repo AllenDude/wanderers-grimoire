@@ -23,7 +23,10 @@ jobs:
           gradle-version: 8.4
 
       - name: Build debug APK
-        run: gradle assembleDebug --no-daemon
+        run: >
+          gradle assembleDebug --no-daemon
+          -PbuildVersionCode=${{ github.run_number }}
+          -PbuildVersionName=1.0.${{ github.run_number }}
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
