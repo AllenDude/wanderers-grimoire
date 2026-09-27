@@ -42,13 +42,21 @@ app/src/main/res/          layouts, colors, strings
 In: notes, pins with clickable links, tasks with checkboxes, custom folders,
 search across everything, edit and delete.
 
-Left out for now, same spirit as the classboard MVP: no dark theme resource
-set (system dark mode won't change colors yet), no custom app icon, no
-drag-to-reorder, no cloud sync or backup/export. All addable later without
-touching the data model.
+Left out for now, same spirit as the classboard MVP: no drag-to-reorder, no
+cloud sync or backup/export. All addable later without touching the data
+model.
 
 ## Editing colors
 
-`app/src/main/res/values/colors.xml`. Same names as the web version (`note`,
+`app/src/main/res/values/colors.xml`. Currently a night palette (deep indigo
+paper, gold and parchment-cream ink, moonlit blue/gold/teal accents) pulled
+from the app icon artwork. Same color names as the web version (`note`,
 `pin`, `task`, `paper`, `ink`) so the two stay visually consistent if you
-keep both around.
+keep both around. There's no separate light theme right now, it's the same
+dark palette regardless of system day/night setting.
+
+## App icon
+
+Lives in `app/src/main/res/mipmap-*/`, one PNG per screen density
+(`ic_launcher.png` and `ic_launcher_round.png`). To swap it, replace all five
+density versions with your new image resized to 48/72/96/144/192px.

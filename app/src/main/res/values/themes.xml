@@ -3,5 +3,7 @@
     <style name="Theme.WanderersGrimoire" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/pin</item>
         <item name="android:windowBackground">@color/paper</item>
+        <item name="android:statusBarColor">@color/paper</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>
