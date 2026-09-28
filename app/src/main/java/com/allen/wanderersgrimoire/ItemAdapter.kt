@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -21,6 +22,7 @@ class ItemAdapter(
         val strip: View = view.findViewById(R.id.typeStrip)
         val check: CheckBox = view.findViewById(R.id.taskCheck)
         val title: TextView = view.findViewById(R.id.itemTitle)
+        val image: ImageView = view.findViewById(R.id.itemImage)
         val body: TextView = view.findViewById(R.id.itemBody)
         val folderTag: TextView = view.findViewById(R.id.itemFolderTag)
         val edit: TextView = view.findViewById(R.id.editBtn)
@@ -56,6 +58,17 @@ class ItemAdapter(
             holder.check.visibility = View.GONE
         }
 
+        val imagePath = item.imagePath
+        if (imagePath != null) {
+            holder.image.visibility = View.VISIBLE
+            holder.image.setImageBitmap(null)
+            val bmp = ImageStore.loadSampled(ctx, imagePath, 400, 400)
+            if (bmp != null) holder.image.setImageBitmap(bmp)
+        } else {
+            holder.image.visibility = View.GONE
+            holder.image.setImageBitmap(null)
+        }
+
         val bodyText = if (item.type == "pin" && item.url.isNotBlank()) {
             item.url + if (item.body.isNotBlank()) "\n" + item.body else ""
         } else {
@@ -85,3 +98,4 @@ class ItemAdapter(
         holder.delete.setOnClickListener { onDelete(item) }
     }
 }
+

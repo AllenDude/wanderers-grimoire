@@ -61,6 +61,15 @@
                 android:focusable="true" />
         </LinearLayout>
 
+        <ImageView
+            android:id="@+id/itemImage"
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:layout_marginTop="8dp"
+            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"
+            android:visibility="gone" />
+
         <TextView
             android:id="@+id/itemBody"
             android:layout_width="match_parent"

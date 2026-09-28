@@ -52,21 +52,33 @@ gets deleted or regenerated.
 app/src/main/java/com/allen/wanderersgrimoire/
   Models.kt          Folder and Item data classes
   Storage.kt          reads/writes JSON to SharedPreferences
+  ImageStore.kt         saves shared-in images to internal storage, sampled thumbnail decoding
   FolderAdapter.kt   folder chip list
-  ItemAdapter.kt        note/pin/task card list
-  MainActivity.kt   screen logic, search, add/edit dialogs
-app/src/main/res/          layouts, colors, strings
+  ItemAdapter.kt        note/pin/task card list, including image thumbnails
+  MainActivity.kt   screen logic, search, add/edit dialogs, share-intent capture
+app/src/main/res/          layouts, colors, strings, launcher icons
 .github/workflows/    the build pipeline
 ```
+
+Share capture works through two intent filters on `MainActivity` in
+`AndroidManifest.xml` (`text/plain` and `image/*`), handled in
+`handleShareIntent()`. A shared image gets copied into
+`filesDir/images/` immediately, since the `content://` Uri another app
+hands over is only valid for the life of that share, not permanently.
 
 ## What's in vs left out
 
 In: notes, pins with clickable links, tasks with checkboxes, custom folders,
-search across everything, edit and delete.
+search across everything, edit and delete, and capturing straight from other
+apps: share a link or screenshot from Instagram, Facebook, Chrome, or your
+gallery, "Wanderer's Grimoire" shows up in the share sheet, and it opens the
+add dialog pre-filled (link and leftover caption text for a shared link,
+image attached for a shared picture) so you just pick a folder and save.
 
 Left out for now, same spirit as the classboard MVP: no drag-to-reorder, no
-cloud sync or backup/export. All addable later without touching the data
-model.
+cloud sync or backup/export, no OCR (text inside a saved screenshot isn't
+searchable yet), no way to remove or swap an image after attaching it, no
+multi-select/bulk move. All addable later without touching the data model.
 
 ## Editing colors
 

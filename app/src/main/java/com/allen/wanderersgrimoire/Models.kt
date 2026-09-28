@@ -13,5 +13,6 @@ data class Item(
     var url: String = "",
     var folderId: String? = null,
     var done: Boolean = false,
+    var imagePath: String? = null, // path inside filesDir/images/, null if no attachment
     val createdAt: Long = System.currentTimeMillis()
 )

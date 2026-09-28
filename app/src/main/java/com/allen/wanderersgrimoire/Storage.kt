@@ -46,6 +46,7 @@ class Storage(context: Context) {
                         url = o.optString("url", ""),
                         folderId = if (o.isNull("folderId")) null else o.optString("folderId", null),
                         done = o.optBoolean("done", false),
+                        imagePath = if (o.isNull("imagePath")) null else o.optString("imagePath", null),
                         createdAt = o.optLong("createdAt", System.currentTimeMillis())
                     )
                 )
@@ -74,6 +75,7 @@ class Storage(context: Context) {
                 put("url", i.url)
                 put("folderId", i.folderId)
                 put("done", i.done)
+                put("imagePath", i.imagePath)
                 put("createdAt", i.createdAt)
             })
         }
