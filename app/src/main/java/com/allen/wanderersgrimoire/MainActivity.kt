@@ -101,22 +101,17 @@ class MainActivity : AppCompatActivity() {
         handleShareIntent(intent)
     }
 
-    /** Catches anything shared in from another app: Instagram/TikTok/FB
-     *  links share as plain text, a screenshot or saved image shares as
-     *  image/*. Either way we pre-fill the add dialog rather than saving
-     *  silently, so there's a chance to pick a folder before it's filed. */
+    // Catches anything shared in from another app: Instagram/TikTok/FB
+    // links share as plain text, a screenshot or saved image shares as an
+    // image type. Either way we pre-fill the add dialog rather than saving
+    // silently, so there's a chance to pick a folder before it's filed.
     private fun handleShareIntent(intent: Intent?) {
         if (intent == null || intent.action != Intent.ACTION_SEND) return
 
         val mimeType = intent.type ?: ""
 
         if (mimeType.startsWith("image/")) {
-            val uri = if (Build.VERSION.SDK_INT >= 33) {
-                intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
-            } else {
-                @Suppress("DEPRECATION")
-                intent.getParcelableExtra(Intent.EXTRA_STREAM)
-            }
+            val uri: Uri? = readSharedUri(intent)
             if (uri != null) {
                 val savedPath = ImageStore.saveFromUri(this, uri)
                 if (savedPath != null) {
@@ -138,6 +133,15 @@ class MainActivity : AppCompatActivity() {
         // Consumed, don't re-fire this same shared content if the
         // activity gets recreated (e.g. on rotation).
         intent.action = null
+    }
+
+    @Suppress("DEPRECATION")
+    private fun readSharedUri(intent: Intent): Uri? {
+        return if (Build.VERSION.SDK_INT >= 33) {
+            intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
+        } else {
+            intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+        }
     }
 
     private fun visibleItems(): List<Item> {
