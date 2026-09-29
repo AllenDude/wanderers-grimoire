@@ -2,11 +2,13 @@
 <resources>
     <color name="paper">#14131C</color>
     <color name="paper2">#1E1D2A</color>
+    <color name="paper3">#262435</color>
     <color name="ink">#EDE3C8</color>
     <color name="ink_dim">#9B92A8</color>
     <color name="line">#33324A</color>
     <color name="note">#7C8FBF</color>
-    <color name="pin">#D4AF6A</color>
+    <color name="link">#A78BD1</color>
+    <color name="gold">#D4AF6A</color>
     <color name="task">#5FA98C</color>
     <color name="danger">#C1503D</color>
 </resources>

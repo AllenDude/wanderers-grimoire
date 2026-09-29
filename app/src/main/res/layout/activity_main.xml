@@ -5,80 +5,299 @@
     android:orientation="vertical"
     android:background="@color/paper">
 
-    <EditText
-        android:id="@+id/searchInput"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="12dp"
-        android:hint="Search everything"
-        android:background="@color/paper2"
-        android:padding="10dp"
-        android:inputType="text" />
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/folderList"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingStart="12dp"
-        android:paddingBottom="8dp"
-        android:clipToPadding="false" />
+        <!-- HOME: header, search, type chips, day-grouped feed -->
+        <LinearLayout
+            android:id="@+id/homeScreen"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="18dp"
+                android:paddingBottom="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Wanderer's Grimoire"
+                    android:textColor="@color/ink"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Your archive of useful stuff."
+                    android:textColor="@color/ink_dim"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/searchInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="12dp"
+                android:hint="🔍 Search your grimoire..."
+                android:background="@drawable/chip_background"
+                android:padding="12dp"
+                android:textColor="@color/ink"
+                android:textColorHint="@color/ink_dim"
+                android:inputType="text" />
+
+            <LinearLayout
+                android:id="@+id/activeFolderBanner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="8dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/activeFolderLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="@color/gold"
+                    android:textStyle="bold"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/clearFolderFilter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="✕ clear"
+                    android:textColor="@color/ink_dim"
+                    android:padding="4dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+            </LinearLayout>
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:paddingBottom="8dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp">
+
+                    <TextView
+                        android:id="@+id/chipAll"
+                        style="@style/TypeChip"
+                        android:text="All" />
+
+                    <TextView
+                        android:id="@+id/chipNotes"
+                        style="@style/TypeChip"
+                        android:text="📝 Notes" />
+
+                    <TextView
+                        android:id="@+id/chipLinks"
+                        style="@style/TypeChip"
+                        android:text="🔗 Links" />
+
+                    <TextView
+                        android:id="@+id/chipTasks"
+                        style="@style/TypeChip"
+                        android:text="✅ Tasks" />
+
+                    <TextView
+                        android:id="@+id/chipImages"
+                        style="@style/TypeChip"
+                        android:text="🖼️ Images" />
+
+                </LinearLayout>
+
+            </HorizontalScrollView>
+
+            <TextView
+                android:id="@+id/emptyView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nothing here yet. Tap ➕ below to start filling the grimoire."
+                android:textColor="@color/ink_dim"
+                android:gravity="center"
+                android:padding="40dp"
+                android:visibility="gone" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/feedList"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="16dp"
+                android:clipToPadding="false" />
+
+        </LinearLayout>
+
+        <!-- COLLECTIONS -->
+        <LinearLayout
+            android:id="@+id/collectionsScreen"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Collections"
+                android:textColor="@color/ink"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:padding="16dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/collectionsList"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:clipToPadding="false" />
+
+            <Button
+                android:id="@+id/newCollectionBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="12dp"
+                android:text="+ New collection" />
+
+        </LinearLayout>
+
+        <!-- PINNED -->
+        <LinearLayout
+            android:id="@+id/pinsScreen"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pinned"
+                android:textColor="@color/ink"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:padding="16dp" />
+
+            <TextView
+                android:id="@+id/pinsEmptyView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nothing pinned yet. Star an item to keep it within easy reach here."
+                android:textColor="@color/ink_dim"
+                android:gravity="center"
+                android:padding="40dp"
+                android:visibility="gone" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/pinsList"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="16dp"
+                android:clipToPadding="false" />
+
+        </LinearLayout>
+
+        <!-- SETTINGS -->
+        <LinearLayout
+            android:id="@+id/settingsScreen"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Settings"
+                android:textColor="@color/ink"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:paddingBottom="16dp" />
+
+            <TextView
+                android:id="@+id/settingsInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/ink_dim"
+                android:lineSpacingExtra="4dp" />
+
+            <Button
+                android:id="@+id/manageCollectionsBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Manage collections" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- BOTTOM NAV -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:paddingBottom="8dp">
+        android:background="@color/paper2"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp">
 
-        <Button
-            android:id="@+id/addNoteBtn"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="4dp"
-            android:text="Note" />
+        <TextView
+            android:id="@+id/navHome"
+            style="@style/NavItem"
+            android:text="🏠\nHome" />
 
-        <Button
-            android:id="@+id/addPinBtn"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="4dp"
-            android:text="Pin" />
+        <TextView
+            android:id="@+id/navCollections"
+            style="@style/NavItem"
+            android:text="📚\nCollections" />
 
-        <Button
-            android:id="@+id/addTaskBtn"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Task" />
+        <TextView
+            android:id="@+id/navCapture"
+            style="@style/NavItem"
+            android:text="➕"
+            android:textSize="22sp"
+            android:textColor="@color/gold" />
+
+        <TextView
+            android:id="@+id/navPins"
+            style="@style/NavItem"
+            android:text="⭐\nPins" />
+
+        <TextView
+            android:id="@+id/navSettings"
+            style="@style/NavItem"
+            android:text="⚙️\nSettings" />
+
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/emptyView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Nothing here yet. Add a note, pin, or task above."
-        android:textColor="@color/ink_dim"
-        android:gravity="center"
-        android:padding="40dp"
-        android:visibility="gone" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/itemList"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:clipToPadding="false" />
-
-    <Button
-        android:id="@+id/newFolderBtn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="12dp"
-        android:text="+ New folder" />
 
 </LinearLayout>

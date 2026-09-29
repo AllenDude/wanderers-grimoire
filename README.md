@@ -50,44 +50,71 @@ gets deleted or regenerated.
 
 ```
 app/src/main/java/com/allen/wanderersgrimoire/
-  Models.kt          Folder and Item data classes
-  Storage.kt          reads/writes JSON to SharedPreferences
-  ImageStore.kt         saves shared-in images to internal storage, sampled thumbnail decoding
-  FolderAdapter.kt   folder chip list
-  ItemAdapter.kt        note/pin/task card list, including image thumbnails
-  MainActivity.kt   screen logic, search, add/edit dialogs, share-intent capture
-app/src/main/res/          layouts, colors, strings, launcher icons
-.github/workflows/    the build pipeline
+  Models.kt              Folder and Item data classes (type is "note"/"link"/"task", plus a pinned flag)
+  Storage.kt               reads/writes JSON to SharedPreferences, migrates old "pin" type to "link"
+  ImageStore.kt              saves shared-in or picked images to internal storage, sampled thumbnail decoding
+  FeedUtils.kt                 day-group labels (TODAY/YESTERDAY/date), time formatting, URL domain extraction
+  FeedAdapter.kt              day-header + content-aware item cards, used by both the Home feed and Pinned screen
+  CollectionAdapter.kt   collection list rows with item counts, used by the Collections screen
+  MainActivity.kt       screen switching, search, type filters, quick capture, share-intent capture
+app/src/main/res/              layouts, colors, styles, strings, launcher icons
+.github/workflows/          the build pipeline
 ```
 
 Share capture works through two intent filters on `MainActivity` in
 `AndroidManifest.xml` (`text/plain` and `image/*`), handled in
 `handleShareIntent()`. A shared image gets copied into
 `filesDir/images/` immediately, since the `content://` Uri another app
-hands over is only valid for the life of that share, not permanently.
+hands over is only valid for the life of that share, not permanently. The
+in-app Quick Capture "Image" button uses the same storage path, just fed
+from the system image picker instead of a share intent.
+
+## Screens
+
+Five destinations via the bottom nav:
+
+- **Home** — the big search bar, type filter chips (All/Notes/Links/Tasks/
+  Images), and the feed itself, grouped into TODAY/YESTERDAY/date sections.
+  Card layout adapts to content: an attached image gets a big thumbnail
+  regardless of type, a link shows its domain beneath the title, a task
+  gets a checkbox, everything gets a star toggle, an edit/delete pair, and
+  a timestamp.
+- **Collections** — every folder with a live item count, "All saved" at
+  the top, delete per collection (items inside become unassigned, not
+  deleted), and a button to add a new one. Tapping a collection jumps to
+  Home filtered to it, with a banner to clear that filter.
+- **➕ (center)** — Quick Capture, a bottom sheet with four content types
+  (Note/Link/Image/Task). Note/Link/Task open the same add dialog as
+  before; Image opens the system image picker and pre-fills the dialog
+  with the picked photo.
+- **Pins** — everything you've starred, across every type and collection,
+  newest first, no day grouping.
+- **Settings** — app version, a short privacy note, and a shortcut into
+  Collections for management.
 
 ## What's in vs left out
 
-In: notes, pins with clickable links, tasks with checkboxes, custom folders,
-search across everything, edit and delete, and capturing straight from other
-apps: share a link or screenshot from Instagram, Facebook, Chrome, or your
-gallery, "Wanderer's Grimoire" shows up in the share sheet, and it opens the
-add dialog pre-filled (link and leftover caption text for a shared link,
-image attached for a shared picture) so you just pick a folder and save.
+In: notes, links with a domain-aware card, tasks with checkboxes, starring
+any item, custom collections with counts and delete, search, a day-grouped
+home feed, content-aware cards, Quick Capture, and capturing straight from
+other apps or the system image picker.
 
 Left out for now, same spirit as the classboard MVP: no drag-to-reorder, no
 cloud sync or backup/export, no OCR (text inside a saved screenshot isn't
 searchable yet), no way to remove or swap an image after attaching it, no
-multi-select/bulk move. All addable later without touching the data model.
+multi-select/bulk move, no collection rename (delete and recreate works for
+now), no per-collection icons (all use 📁), search only covers the Home
+feed, not Pins or Collections. All addable later without touching the data
+model.
 
 ## Editing colors
 
-`app/src/main/res/values/colors.xml`. Currently a night palette (deep indigo
-paper, gold and parchment-cream ink, moonlit blue/gold/teal accents) pulled
-from the app icon artwork. Same color names as the web version (`note`,
-`pin`, `task`, `paper`, `ink`) so the two stay visually consistent if you
-keep both around. There's no separate light theme right now, it's the same
-dark palette regardless of system day/night setting.
+`app/src/main/res/values/colors.xml`. A night palette (deep indigo paper,
+gold and parchment-cream ink) pulled from the app icon artwork, plus a
+distinct hue per content type: `note` (moonlit blue), `link` (violet),
+`task` (teal), and `gold` doing double duty as the pinned-star color and
+the theme's primary accent. There's no separate light theme right now, it's
+the same dark palette regardless of system day/night setting.
 
 ## App icon
 

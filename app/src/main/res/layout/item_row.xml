@@ -41,6 +41,16 @@
                 android:textSize="16sp" />
 
             <TextView
+                android:id="@+id/starBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/gold"
+                android:textSize="16sp"
+                android:padding="6dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <TextView
                 android:id="@+id/editBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -71,6 +81,16 @@
             android:visibility="gone" />
 
         <TextView
+            android:id="@+id/itemSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/ink_dim"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:layout_marginTop="6dp"
+            android:visibility="gone" />
+
+        <TextView
             android:id="@+id/itemBody"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -78,14 +98,30 @@
             android:layout_marginTop="4dp"
             android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/itemFolderTag"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/ink_dim"
-            android:textSize="12sp"
-            android:layout_marginTop="6dp"
-            android:visibility="gone" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:id="@+id/itemFolderTag"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/ink_dim"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/itemTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/ink_dim"
+                android:textSize="11sp" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

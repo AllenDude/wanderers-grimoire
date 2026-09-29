@@ -5,11 +5,9 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
 
-/**
- * Everything lives in SharedPreferences as two JSON blobs, folders and items.
- * No backend, no database file, matches how the web version does it in
- * localStorage.
- */
+// Everything lives in SharedPreferences as two JSON blobs, folders and
+// items. No backend, no database file, matches how the web version does
+// it in localStorage.
 class Storage(context: Context) {
     private val prefs = context.getSharedPreferences("wanderers_grimoire", Context.MODE_PRIVATE)
 
@@ -37,15 +35,22 @@ class Storage(context: Context) {
             val arr = JSONArray(itemsJson)
             for (i in 0 until arr.length()) {
                 val o = arr.getJSONObject(i)
+                // Older saves used "pin" as the type name for a link item,
+                // before "pinned" existed as its own starred flag. Map it
+                // forward so nothing already saved goes missing.
+                val rawType = o.getString("type")
+                val migratedType = if (rawType == "pin") "link" else rawType
+
                 items.add(
                     Item(
                         id = o.getString("id"),
-                        type = o.getString("type"),
+                        type = migratedType,
                         title = o.getString("title"),
                         body = o.optString("body", ""),
                         url = o.optString("url", ""),
                         folderId = if (o.isNull("folderId")) null else o.optString("folderId", null),
                         done = o.optBoolean("done", false),
+                        pinned = o.optBoolean("pinned", false),
                         imagePath = if (o.isNull("imagePath")) null else o.optString("imagePath", null),
                         createdAt = o.optLong("createdAt", System.currentTimeMillis())
                     )
@@ -53,7 +58,7 @@ class Storage(context: Context) {
             }
         }
 
-        save() // persists the default folders on first run
+        save() // persists the default folders and any type migration
     }
 
     fun save() {
@@ -75,6 +80,7 @@ class Storage(context: Context) {
                 put("url", i.url)
                 put("folderId", i.folderId)
                 put("done", i.done)
+                put("pinned", i.pinned)
                 put("imagePath", i.imagePath)
                 put("createdAt", i.createdAt)
             })

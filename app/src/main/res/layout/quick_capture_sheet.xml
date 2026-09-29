@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/paper2"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="QUICK CAPTURE"
+        android:textColor="@color/gold"
+        android:textStyle="bold"
+        android:textSize="13sp"
+        android:letterSpacing="0.1"
+        android:layout_marginBottom="16dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/captureNote"
+            style="@style/CaptureOption"
+            android:text="📝\nNote" />
+
+        <TextView
+            android:id="@+id/captureLink"
+            style="@style/CaptureOption"
+            android:text="🔗\nLink" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp">
+
+        <TextView
+            android:id="@+id/captureImage"
+            style="@style/CaptureOption"
+            android:text="🖼️\nImage" />
+
+        <TextView
+            android:id="@+id/captureTask"
+            style="@style/CaptureOption"
+            android:text="✅\nTask" />
+
+    </LinearLayout>
+
+</LinearLayout>
