@@ -54,9 +54,9 @@ app/src/main/java/com/allen/wanderersgrimoire/
   Storage.kt               reads/writes JSON to SharedPreferences, migrates old "pin" type to "link"
   ImageStore.kt              saves shared-in or picked images to internal storage, sampled thumbnail decoding
   FeedUtils.kt                 day-group labels (TODAY/YESTERDAY/date), time formatting, URL domain extraction
-  FeedAdapter.kt              day-header + content-aware item cards, used by both the Home feed and Pinned screen
+  FeedAdapter.kt              header row + text card + image tile, one adapter for both Home and Pinned
   CollectionAdapter.kt   collection list rows with item counts, used by the Collections screen
-  MainActivity.kt       screen switching, search, type filters, quick capture, share-intent capture
+  MainActivity.kt       screen switching, search, sort, filters, quick capture, share-intent capture
 app/src/main/res/              layouts, colors, styles, strings, launcher icons
 .github/workflows/          the build pipeline
 ```
@@ -69,34 +69,45 @@ hands over is only valid for the life of that share, not permanently. The
 in-app Quick Capture "Image" button uses the same storage path, just fed
 from the system image picker instead of a share intent.
 
+Home and Pinned use a `GridLayoutManager` with a span-size lookup rather
+than a plain vertical list: a day header or a text card (note/link/task)
+takes the full row width, but anything with an attached image collapses to
+half width, so images naturally fall into a 2-column grid alongside the
+regular cards instead of each getting a full-width slot to itself.
+
 ## Screens
 
 Five destinations via the bottom nav:
 
-- **Home** — the big search bar, type filter chips (All/Notes/Links/Tasks/
-  Images), and the feed itself, grouped into TODAY/YESTERDAY/date sections.
-  Card layout adapts to content: an attached image gets a big thumbnail
-  regardless of type, a link shows its domain beneath the title, a task
-  gets a checkbox, everything gets a star toggle, an edit/delete pair, and
-  a timestamp.
+- **Home** — header with a small stat line (entries/collections/pinned),
+  a search bar with a sort-direction toggle, type filter chips (All/Notes/
+  Links/Tasks/Images/Pins), a "RECENT" section label that changes to match
+  whatever filter is active (with a "See all" to clear it), then the feed
+  itself, grouped into TODAY/YESTERDAY/date sections. An attached image
+  renders as a compact grid tile (thumbnail, star, one-line caption); a
+  link shows its domain beneath the title; a task gets a checkbox;
+  everything else gets a star toggle, edit/delete, and a timestamp.
 - **Collections** — every folder with a live item count, "All saved" at
   the top, delete per collection (items inside become unassigned, not
   deleted), and a button to add a new one. Tapping a collection jumps to
   Home filtered to it, with a banner to clear that filter.
-- **➕ (center)** — Quick Capture, a bottom sheet with four content types
-  (Note/Link/Image/Task). Note/Link/Task open the same add dialog as
-  before; Image opens the system image picker and pre-fills the dialog
-  with the picked photo.
+- **➕ (floating, center)** — Quick Capture, a bottom sheet with four
+  content types (Note/Link/Image/Task). Note/Link/Task open the same add
+  dialog as before; Image opens the system image picker and pre-fills the
+  dialog with the picked photo. The dialog also has a Delete button now
+  when editing an existing item, not just the card's own Delete control.
 - **Pins** — everything you've starred, across every type and collection,
-  newest first, no day grouping.
+  newest first, no day grouping, same grid treatment for images.
 - **Settings** — app version, a short privacy note, and a shortcut into
   Collections for management.
 
 ## What's in vs left out
 
 In: notes, links with a domain-aware card, tasks with checkboxes, starring
-any item, custom collections with counts and delete, search, a day-grouped
-home feed, content-aware cards, Quick Capture, and capturing straight from
+any item (with its own filter chip and its own bottom-nav tab), custom
+collections with counts and delete, search, sort direction toggle, a
+day-grouped home feed with a 2-column image grid, content-aware cards,
+Quick Capture, delete from the edit dialog, and capturing straight from
 other apps or the system image picker.
 
 Left out for now, same spirit as the classboard MVP: no drag-to-reorder, no
@@ -113,8 +124,9 @@ model.
 gold and parchment-cream ink) pulled from the app icon artwork, plus a
 distinct hue per content type: `note` (moonlit blue), `link` (violet),
 `task` (teal), and `gold` doing double duty as the pinned-star color and
-the theme's primary accent. There's no separate light theme right now, it's
-the same dark palette regardless of system day/night setting.
+the theme's primary accent (chips, the floating capture button, active nav
+tab). There's no separate light theme right now, it's the same dark
+palette regardless of system day/night setting.
 
 ## App icon
 

@@ -18,6 +18,7 @@ import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -39,9 +40,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var storage: Storage
 
     private var activeScreen: Screen = Screen.HOME
-    private var activeType: String = "all" // all, note, link, task, image
+    private var activeType: String = "all" // all, note, link, task, image, pinned
     private var activeFolder: String = "all"
     private var query: String = ""
+    private var sortAscending: Boolean = false
 
     private lateinit var feedAdapter: FeedAdapter
     private lateinit var pinsAdapter: FeedAdapter
@@ -52,8 +54,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var collectionsScreen: View
     private lateinit var pinsScreen: View
     private lateinit var settingsScreen: View
-    private lateinit var emptyView: TextView
-    private lateinit var pinsEmptyView: TextView
+    private lateinit var headerStats: TextView
+    private lateinit var sectionTitle: TextView
+    private lateinit var seeAllBtn: TextView
+    private lateinit var emptyView: View
+    private lateinit var pinsEmptyView: View
     private lateinit var activeFolderBanner: View
     private lateinit var activeFolderLabel: TextView
     private lateinit var chipAll: TextView
@@ -61,6 +66,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var chipLinks: TextView
     private lateinit var chipTasks: TextView
     private lateinit var chipImages: TextView
+    private lateinit var chipPins: TextView
     private lateinit var navHome: TextView
     private lateinit var navCollections: TextView
     private lateinit var navPins: TextView
@@ -106,6 +112,9 @@ class MainActivity : AppCompatActivity() {
         collectionsScreen = findViewById(R.id.collectionsScreen)
         pinsScreen = findViewById(R.id.pinsScreen)
         settingsScreen = findViewById(R.id.settingsScreen)
+        headerStats = findViewById(R.id.headerStats)
+        sectionTitle = findViewById(R.id.sectionTitle)
+        seeAllBtn = findViewById(R.id.seeAllBtn)
         emptyView = findViewById(R.id.emptyView)
         pinsEmptyView = findViewById(R.id.pinsEmptyView)
         activeFolderBanner = findViewById(R.id.activeFolderBanner)
@@ -115,6 +124,7 @@ class MainActivity : AppCompatActivity() {
         chipLinks = findViewById(R.id.chipLinks)
         chipTasks = findViewById(R.id.chipTasks)
         chipImages = findViewById(R.id.chipImages)
+        chipPins = findViewById(R.id.chipPins)
         navHome = findViewById(R.id.navHome)
         navCollections = findViewById(R.id.navCollections)
         navPins = findViewById(R.id.navPins)
@@ -123,7 +133,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupFeed() {
         val feedList = findViewById<RecyclerView>(R.id.feedList)
-        feedList.layoutManager = LinearLayoutManager(this)
         feedAdapter = FeedAdapter(
             getRows = { buildFeedRows() },
             getFolderName = { id -> storage.folders.find { it.id == id }?.name },
@@ -133,17 +142,38 @@ class MainActivity : AppCompatActivity() {
             onDelete = { item -> deleteItem(item) },
             onOpenLink = { url -> openLink(url) }
         )
+        val gridManager = GridLayoutManager(this, 2)
+        gridManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int = feedAdapter.spanSizeAt(position)
+        }
+        feedList.layoutManager = gridManager
         feedList.adapter = feedAdapter
 
         findViewById<TextView>(R.id.clearFolderFilter).setOnClickListener {
             activeFolder = "all"
             refreshAll()
         }
+
+        findViewById<TextView>(R.id.sortToggle).setOnClickListener {
+            sortAscending = !sortAscending
+            it.alpha = if (sortAscending) 1f else 0.6f
+            refreshAll()
+        }
+
+        seeAllBtn.setOnClickListener {
+            activeType = "all"
+            activeFolder = "all"
+            query = ""
+            findViewById<EditText>(R.id.searchInput).setText("")
+            updateChipStyles()
+            refreshAll()
+        }
+
+        findViewById<TextView>(R.id.emptyAddBtn).setOnClickListener { openQuickCapture() }
     }
 
     private fun setupPins() {
         val pinsList = findViewById<RecyclerView>(R.id.pinsList)
-        pinsList.layoutManager = LinearLayoutManager(this)
         pinsAdapter = FeedAdapter(
             getRows = { storage.items.filter { it.pinned }.sortedByDescending { it.createdAt }.map { FeedRow.Row(it) } },
             getFolderName = { id -> storage.folders.find { it.id == id }?.name },
@@ -153,6 +183,11 @@ class MainActivity : AppCompatActivity() {
             onDelete = { item -> deleteItem(item) },
             onOpenLink = { url -> openLink(url) }
         )
+        val gridManager = GridLayoutManager(this, 2)
+        gridManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int = pinsAdapter.spanSizeAt(position)
+        }
+        pinsList.layoutManager = gridManager
         pinsList.adapter = pinsAdapter
     }
 
@@ -180,6 +215,7 @@ class MainActivity : AppCompatActivity() {
         chipLinks.setOnClickListener { activeType = "link"; updateChipStyles(); refreshAll() }
         chipTasks.setOnClickListener { activeType = "task"; updateChipStyles(); refreshAll() }
         chipImages.setOnClickListener { activeType = "image"; updateChipStyles(); refreshAll() }
+        chipPins.setOnClickListener { activeType = "pinned"; updateChipStyles(); refreshAll() }
         updateChipStyles()
     }
 
@@ -263,6 +299,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun buildFeedRows(): List<FeedRow> {
         var list = storage.items.sortedByDescending { it.createdAt }
+        if (sortAscending) list = list.reversed()
 
         if (activeFolder != "all") list = list.filter { it.folderId == activeFolder }
 
@@ -271,6 +308,7 @@ class MainActivity : AppCompatActivity() {
             "link" -> list.filter { it.type == "link" }
             "task" -> list.filter { it.type == "task" }
             "image" -> list.filter { it.imagePath != null }
+            "pinned" -> list.filter { it.pinned }
             else -> list
         }
 
@@ -327,12 +365,29 @@ class MainActivity : AppCompatActivity() {
             "note" to chipNotes,
             "link" to chipLinks,
             "task" to chipTasks,
-            "image" to chipImages
+            "image" to chipImages,
+            "pinned" to chipPins
         )
         chips.forEach { (key, chip) ->
             val active = key == activeType
             chip.setBackgroundResource(if (active) R.drawable.chip_background_active else R.drawable.chip_background)
             chip.setTextColor(ContextCompat.getColor(this, if (active) R.color.gold else R.color.ink_dim))
+        }
+    }
+
+    private fun updateSectionTitle() {
+        val filtered = activeType != "all" || activeFolder != "all" || query.isNotBlank()
+        seeAllBtn.visibility = if (filtered) View.VISIBLE else View.GONE
+
+        sectionTitle.text = when {
+            query.isNotBlank() -> "SEARCH RESULTS"
+            activeType == "note" -> "NOTES"
+            activeType == "link" -> "LINKS"
+            activeType == "task" -> "TASKS"
+            activeType == "image" -> "IMAGES"
+            activeType == "pinned" -> "PINNED"
+            activeFolder != "all" -> storage.folders.find { it.id == activeFolder }?.name?.uppercase() ?: "RECENT"
+            else -> "RECENT"
         }
     }
 
@@ -344,6 +399,13 @@ class MainActivity : AppCompatActivity() {
             activeFolderLabel.text = "📁 Viewing: $name"
             activeFolderBanner.visibility = View.VISIBLE
         }
+
+        updateSectionTitle()
+
+        val entries = storage.items.size
+        val collections = storage.folders.size
+        val pinned = storage.items.count { it.pinned }
+        headerStats.text = "$entries entries · $collections collections · $pinned pinned"
 
         feedAdapter.notifyDataSetChanged()
         pinsAdapter.notifyDataSetChanged()
@@ -461,7 +523,7 @@ class MainActivity : AppCompatActivity() {
 
         val dialogTitleText = if (existing != null) "Edit" else "Add ${type.replaceFirstChar { it.uppercase() }}"
 
-        AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this)
             .setTitle(dialogTitleText)
             .setView(view)
             .setPositiveButton("Save") { _, _ ->
@@ -498,6 +560,11 @@ class MainActivity : AppCompatActivity() {
                     ImageStore.delete(this, prefill.imagePath)
                 }
             }
-            .show()
+
+        if (existing != null) {
+            builder.setNeutralButton("Delete") { _, _ -> deleteItem(existing) }
+        }
+
+        builder.show()
     }
 }

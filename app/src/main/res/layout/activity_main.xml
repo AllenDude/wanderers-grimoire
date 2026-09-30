@@ -10,7 +10,7 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <!-- HOME: header, search, type chips, day-grouped feed -->
+        <!-- HOME -->
         <LinearLayout
             android:id="@+id/homeScreen"
             android:layout_width="match_parent"
@@ -20,41 +20,100 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                android:paddingTop="18dp"
-                android:paddingBottom="4dp">
+                android:paddingTop="16dp"
+                android:paddingBottom="2dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Wanderer's Grimoire"
-                    android:textColor="@color/ink"
-                    android:textSize="22sp"
-                    android:textStyle="bold" />
+                    android:text="📖"
+                    android:textSize="20sp"
+                    android:layout_marginEnd="8dp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Your archive of useful stuff."
-                    android:textColor="@color/ink_dim"
-                    android:textSize="13sp" />
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Wanderer's Grimoire"
+                        android:textColor="@color/ink"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="1dp"
+                        android:text="Your archive of useful stuff."
+                        android:textColor="@color/ink_dim"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
 
             </LinearLayout>
 
-            <EditText
-                android:id="@+id/searchInput"
+            <TextView
+                android:id="@+id/headerStats"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="4dp"
+                android:textColor="@color/ink_dim"
+                android:textSize="11sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
                 android:layout_margin="12dp"
-                android:hint="🔍 Search your grimoire..."
                 android:background="@drawable/chip_background"
-                android:padding="12dp"
-                android:textColor="@color/ink"
-                android:textColorHint="@color/ink_dim"
-                android:inputType="text" />
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🔍"
+                    android:textSize="14sp"
+                    android:layout_marginEnd="8dp" />
+
+                <EditText
+                    android:id="@+id/searchInput"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Search your grimoire..."
+                    android:background="@null"
+                    android:padding="0dp"
+                    android:minHeight="0dp"
+                    android:textColor="@color/ink"
+                    android:textColorHint="@color/ink_dim"
+                    android:inputType="text" />
+
+                <TextView
+                    android:id="@+id/sortToggle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⇅"
+                    android:textColor="@color/ink_dim"
+                    android:textSize="15sp"
+                    android:paddingStart="8dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/activeFolderBanner"
@@ -92,7 +151,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:scrollbars="none"
-                android:paddingBottom="8dp">
+                android:paddingBottom="4dp">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -126,19 +185,103 @@
                         style="@style/TypeChip"
                         android:text="🖼️ Images" />
 
+                    <TextView
+                        android:id="@+id/chipPins"
+                        style="@style/TypeChip"
+                        android:text="⭐ Pins" />
+
                 </LinearLayout>
 
             </HorizontalScrollView>
 
-            <TextView
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="4dp">
+
+                <TextView
+                    android:id="@+id/sectionTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="RECENT"
+                    android:textColor="@color/gold"
+                    android:textStyle="bold"
+                    android:textSize="12sp"
+                    android:letterSpacing="0.1" />
+
+                <TextView
+                    android:id="@+id/seeAllBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="See all →"
+                    android:textColor="@color/ink_dim"
+                    android:textSize="12sp"
+                    android:visibility="gone"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/emptyView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Nothing here yet. Tap ➕ below to start filling the grimoire."
-                android:textColor="@color/ink_dim"
-                android:gravity="center"
-                android:padding="40dp"
-                android:visibility="gone" />
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:paddingTop="28dp"
+                android:paddingBottom="16dp"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="◇"
+                    android:textColor="@color/gold"
+                    android:textSize="26sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Your grimoire is empty"
+                    android:textColor="@color/ink"
+                    android:textStyle="bold"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Start saving interesting stuff you discover."
+                    android:textColor="@color/ink_dim"
+                    android:textSize="12sp"
+                    android:gravity="center" />
+
+                <TextView
+                    android:id="@+id/emptyAddBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="+ Add something"
+                    android:textColor="@color/gold"
+                    android:textSize="13sp"
+                    android:background="@drawable/chip_background_active"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+            </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/feedList"
@@ -165,7 +308,7 @@
                 android:layout_height="wrap_content"
                 android:text="Collections"
                 android:textColor="@color/ink"
-                android:textSize="22sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 android:padding="16dp" />
 
@@ -200,19 +343,48 @@
                 android:layout_height="wrap_content"
                 android:text="Pinned"
                 android:textColor="@color/ink"
-                android:textSize="22sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 android:padding="16dp" />
 
-            <TextView
+            <LinearLayout
                 android:id="@+id/pinsEmptyView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Nothing pinned yet. Star an item to keep it within easy reach here."
-                android:textColor="@color/ink_dim"
-                android:gravity="center"
-                android:padding="40dp"
-                android:visibility="gone" />
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:paddingTop="28dp"
+                android:paddingBottom="16dp"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="◇"
+                    android:textColor="@color/gold"
+                    android:textSize="26sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Nothing pinned yet"
+                    android:textColor="@color/ink"
+                    android:textStyle="bold"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Star an item to keep it within easy reach here."
+                    android:textColor="@color/ink_dim"
+                    android:textSize="12sp"
+                    android:gravity="center" />
+
+            </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/pinsList"
@@ -240,7 +412,7 @@
                 android:layout_height="wrap_content"
                 android:text="Settings"
                 android:textColor="@color/ink"
-                android:textSize="22sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 android:paddingBottom="16dp" />
 
@@ -262,42 +434,62 @@
 
     </FrameLayout>
 
-    <!-- BOTTOM NAV -->
-    <LinearLayout
+    <!-- BOTTOM NAV, with a floating capture button overlapping its top edge -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="@color/paper2"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp">
+        android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/navHome"
-            style="@style/NavItem"
-            android:text="🏠\nHome" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="horizontal"
+            android:background="@color/paper2"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp">
 
-        <TextView
-            android:id="@+id/navCollections"
-            style="@style/NavItem"
-            android:text="📚\nCollections" />
+            <TextView
+                android:id="@+id/navHome"
+                style="@style/NavItem"
+                android:text="🏠\nHome" />
+
+            <TextView
+                android:id="@+id/navCollections"
+                style="@style/NavItem"
+                android:text="📚\nCollections" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/navPins"
+                style="@style/NavItem"
+                android:text="⭐\nPins" />
+
+            <TextView
+                android:id="@+id/navSettings"
+                style="@style/NavItem"
+                android:text="⚙️\nSettings" />
+
+        </LinearLayout>
 
         <TextView
             android:id="@+id/navCapture"
-            style="@style/NavItem"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="40dp"
+            android:background="@drawable/circle_gold"
+            android:elevation="3dp"
+            android:gravity="center"
             android:text="➕"
-            android:textSize="22sp"
-            android:textColor="@color/gold" />
+            android:textColor="@color/paper"
+            android:textSize="20sp"
+            android:clickable="true"
+            android:focusable="true" />
 
-        <TextView
-            android:id="@+id/navPins"
-            style="@style/NavItem"
-            android:text="⭐\nPins" />
-
-        <TextView
-            android:id="@+id/navSettings"
-            style="@style/NavItem"
-            android:text="⚙️\nSettings" />
-
-    </LinearLayout>
+    </FrameLayout>
 
 </LinearLayout>

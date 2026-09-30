@@ -29,6 +29,7 @@ class FeedAdapter(
     companion object {
         private const val TYPE_HEADER = 0
         private const val TYPE_ITEM = 1
+        private const val TYPE_IMAGE_TILE = 2
     }
 
     class HeaderVH(view: View) : RecyclerView.ViewHolder(view) {
@@ -40,7 +41,6 @@ class FeedAdapter(
         val check: CheckBox = view.findViewById(R.id.taskCheck)
         val title: TextView = view.findViewById(R.id.itemTitle)
         val star: TextView = view.findViewById(R.id.starBtn)
-        val image: ImageView = view.findViewById(R.id.itemImage)
         val subtitle: TextView = view.findViewById(R.id.itemSubtitle)
         val body: TextView = view.findViewById(R.id.itemBody)
         val folderTag: TextView = view.findViewById(R.id.itemFolderTag)
@@ -49,20 +49,43 @@ class FeedAdapter(
         val delete: TextView = view.findViewById(R.id.deleteBtn)
     }
 
+    class TileVH(view: View) : RecyclerView.ViewHolder(view) {
+        val image: ImageView = view.findViewById(R.id.tileImage)
+        val star: TextView = view.findViewById(R.id.tileStar)
+        val caption: TextView = view.findViewById(R.id.tileCaption)
+    }
+
+    // Headers and text-only cards take the full row width; anything with an
+    // attached image becomes a half-width tile so images fall into a
+    // 2-column grid instead of one huge card per photo.
+    fun spanSizeAt(position: Int): Int {
+        return when (val row = getRows()[position]) {
+            is FeedRow.Header -> 2
+            is FeedRow.Row -> if (row.item.imagePath != null) 1 else 2
+        }
+    }
+
     override fun getItemViewType(position: Int): Int {
-        return when (getRows()[position]) {
+        return when (val row = getRows()[position]) {
             is FeedRow.Header -> TYPE_HEADER
-            is FeedRow.Row -> TYPE_ITEM
+            is FeedRow.Row -> if (row.item.imagePath != null) TYPE_IMAGE_TILE else TYPE_ITEM
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return if (viewType == TYPE_HEADER) {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.header_date, parent, false)
-            HeaderVH(view)
-        } else {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_row, parent, false)
-            ItemVH(view)
+        return when (viewType) {
+            TYPE_HEADER -> {
+                val view = LayoutInflater.from(parent.context).inflate(R.layout.header_date, parent, false)
+                HeaderVH(view)
+            }
+            TYPE_IMAGE_TILE -> {
+                val view = LayoutInflater.from(parent.context).inflate(R.layout.item_image_tile, parent, false)
+                TileVH(view)
+            }
+            else -> {
+                val view = LayoutInflater.from(parent.context).inflate(R.layout.item_row, parent, false)
+                ItemVH(view)
+            }
         }
     }
 
@@ -71,12 +94,35 @@ class FeedAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val row = getRows()[position]) {
             is FeedRow.Header -> bindHeader(holder as HeaderVH, row.label)
-            is FeedRow.Row -> bindItem(holder as ItemVH, row.item)
+            is FeedRow.Row -> {
+                if (row.item.imagePath != null) {
+                    bindTile(holder as TileVH, row.item)
+                } else {
+                    bindItem(holder as ItemVH, row.item)
+                }
+            }
         }
     }
 
     private fun bindHeader(holder: HeaderVH, label: String) {
         holder.label.text = label
+    }
+
+    private fun bindTile(holder: TileVH, item: Item) {
+        val ctx = holder.itemView.context
+        val path = item.imagePath
+
+        holder.image.setImageBitmap(null)
+        if (path != null) {
+            val bmp = ImageStore.loadSampled(ctx, path, 400, 400)
+            if (bmp != null) holder.image.setImageBitmap(bmp)
+        }
+
+        holder.star.text = if (item.pinned) "★" else "☆"
+        holder.star.setOnClickListener { onTogglePinned(item) }
+
+        holder.caption.text = item.title
+        holder.itemView.setOnClickListener { onEdit(item) }
     }
 
     private fun bindItem(holder: ItemVH, item: Item) {
@@ -107,17 +153,6 @@ class FeedAdapter(
 
         holder.star.text = if (item.pinned) "★" else "☆"
         holder.star.setOnClickListener { onTogglePinned(item) }
-
-        val imagePath = item.imagePath
-        if (imagePath != null) {
-            holder.image.visibility = View.VISIBLE
-            holder.image.setImageBitmap(null)
-            val bmp = ImageStore.loadSampled(ctx, imagePath, 400, 400)
-            if (bmp != null) holder.image.setImageBitmap(bmp)
-        } else {
-            holder.image.visibility = View.GONE
-            holder.image.setImageBitmap(null)
-        }
 
         if (item.type == "link" && item.url.isNotBlank()) {
             holder.subtitle.visibility = View.VISIBLE
