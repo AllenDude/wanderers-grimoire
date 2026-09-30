@@ -47,6 +47,7 @@
                 android:textColor="@color/gold"
                 android:textSize="15sp"
                 android:padding="6dp"
+                android:foreground="?android:attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true" />
 
@@ -58,6 +59,7 @@
                 android:textColor="@color/ink_dim"
                 android:textSize="12sp"
                 android:padding="6dp"
+                android:foreground="?android:attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true" />
 
@@ -69,6 +71,7 @@
                 android:textColor="@color/danger"
                 android:textSize="12sp"
                 android:padding="6dp"
+                android:foreground="?android:attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true" />
         </LinearLayout>

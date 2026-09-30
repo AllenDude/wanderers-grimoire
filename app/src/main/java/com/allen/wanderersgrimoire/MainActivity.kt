@@ -7,9 +7,13 @@ import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.transition.Fade
+import android.transition.TransitionManager
 import android.util.Patterns
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.ImageView
@@ -45,16 +49,23 @@ class MainActivity : AppCompatActivity() {
     private var query: String = ""
     private var sortAscending: Boolean = false
 
+    // Tracks whether each empty state was already showing, so the fade-in
+    // only plays on the gone-to-visible transition, not on every refresh.
+    private var emptyViewShowing = false
+    private var pinsEmptyViewShowing = false
+
     private lateinit var feedAdapter: FeedAdapter
     private lateinit var pinsAdapter: FeedAdapter
     private lateinit var collectionAdapter: CollectionAdapter
 
     // Views
+    private lateinit var screenContainer: ViewGroup
     private lateinit var homeScreen: View
     private lateinit var collectionsScreen: View
     private lateinit var pinsScreen: View
     private lateinit var settingsScreen: View
     private lateinit var headerStats: TextView
+    private lateinit var sectionTitleRow: ViewGroup
     private lateinit var sectionTitle: TextView
     private lateinit var seeAllBtn: TextView
     private lateinit var emptyView: View
@@ -71,6 +82,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var navCollections: TextView
     private lateinit var navPins: TextView
     private lateinit var navSettings: TextView
+    private lateinit var feedList: RecyclerView
+    private lateinit var pinsList: RecyclerView
+    private lateinit var collectionsList: RecyclerView
 
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
@@ -108,11 +122,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun bindViews() {
+        screenContainer = findViewById(R.id.screenContainer)
         homeScreen = findViewById(R.id.homeScreen)
         collectionsScreen = findViewById(R.id.collectionsScreen)
         pinsScreen = findViewById(R.id.pinsScreen)
         settingsScreen = findViewById(R.id.settingsScreen)
         headerStats = findViewById(R.id.headerStats)
+        sectionTitleRow = findViewById(R.id.sectionTitleRow)
         sectionTitle = findViewById(R.id.sectionTitle)
         seeAllBtn = findViewById(R.id.seeAllBtn)
         emptyView = findViewById(R.id.emptyView)
@@ -129,10 +145,12 @@ class MainActivity : AppCompatActivity() {
         navCollections = findViewById(R.id.navCollections)
         navPins = findViewById(R.id.navPins)
         navSettings = findViewById(R.id.navSettings)
+        feedList = findViewById(R.id.feedList)
+        pinsList = findViewById(R.id.pinsList)
+        collectionsList = findViewById(R.id.collectionsList)
     }
 
     private fun setupFeed() {
-        val feedList = findViewById<RecyclerView>(R.id.feedList)
         feedAdapter = FeedAdapter(
             getRows = { buildFeedRows() },
             getFolderName = { id -> storage.folders.find { it.id == id }?.name },
@@ -173,7 +191,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupPins() {
-        val pinsList = findViewById<RecyclerView>(R.id.pinsList)
         pinsAdapter = FeedAdapter(
             getRows = { storage.items.filter { it.pinned }.sortedByDescending { it.createdAt }.map { FeedRow.Row(it) } },
             getFolderName = { id -> storage.folders.find { it.id == id }?.name },
@@ -192,7 +209,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupCollections() {
-        val collectionsList = findViewById<RecyclerView>(R.id.collectionsList)
         collectionsList.layoutManager = LinearLayoutManager(this)
         collectionAdapter = CollectionAdapter(
             getRows = { buildCollectionRows() },
@@ -222,9 +238,25 @@ class MainActivity : AppCompatActivity() {
     private fun setupNav() {
         navHome.setOnClickListener { showScreen(Screen.HOME) }
         navCollections.setOnClickListener { showScreen(Screen.COLLECTIONS) }
-        findViewById<TextView>(R.id.navCapture).setOnClickListener { openQuickCapture() }
         navPins.setOnClickListener { showScreen(Screen.PINS) }
         navSettings.setOnClickListener { showScreen(Screen.SETTINGS) }
+
+        val captureBtn = findViewById<TextView>(R.id.navCapture)
+        captureBtn.setOnClickListener { openQuickCapture() }
+        // A small press-in squish, like a real Material FAB: shrinks on
+        // finger-down, springs back on release. onTouch returning false
+        // lets the click still fire normally.
+        captureBtn.setOnTouchListener { view, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    view.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).start()
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    view.animate().scaleX(1f).scaleY(1f).setDuration(120).start()
+                }
+            }
+            false
+        }
     }
 
     private fun setupSearch() {
@@ -341,6 +373,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun showScreen(screen: Screen) {
         activeScreen = screen
+        TransitionManager.beginDelayedTransition(screenContainer, Fade().setDuration(150))
         homeScreen.visibility = if (screen == Screen.HOME) View.VISIBLE else View.GONE
         collectionsScreen.visibility = if (screen == Screen.COLLECTIONS) View.VISIBLE else View.GONE
         pinsScreen.visibility = if (screen == Screen.PINS) View.VISIBLE else View.GONE
@@ -379,7 +412,7 @@ class MainActivity : AppCompatActivity() {
         val filtered = activeType != "all" || activeFolder != "all" || query.isNotBlank()
         seeAllBtn.visibility = if (filtered) View.VISIBLE else View.GONE
 
-        sectionTitle.text = when {
+        val label = when {
             query.isNotBlank() -> "SEARCH RESULTS"
             activeType == "note" -> "NOTES"
             activeType == "link" -> "LINKS"
@@ -388,6 +421,14 @@ class MainActivity : AppCompatActivity() {
             activeType == "pinned" -> "PINNED"
             activeFolder != "all" -> storage.folders.find { it.id == activeFolder }?.name?.uppercase() ?: "RECENT"
             else -> "RECENT"
+        }
+
+        // Only crossfade when the label actually changes, this runs on
+        // every keystroke in search otherwise and a transition firing that
+        // often reads as jittery rather than smooth.
+        if (sectionTitle.text != label) {
+            TransitionManager.beginDelayedTransition(sectionTitleRow, Fade().setDuration(120))
+            sectionTitle.text = label
         }
     }
 
@@ -411,8 +452,34 @@ class MainActivity : AppCompatActivity() {
         pinsAdapter.notifyDataSetChanged()
         collectionAdapter.notifyDataSetChanged()
 
-        emptyView.visibility = if (buildFeedRows().isEmpty()) View.VISIBLE else View.GONE
-        pinsEmptyView.visibility = if (storage.items.none { it.pinned }) View.VISIBLE else View.GONE
+        // Replays the cascading fall-in on every refresh, not just first
+        // load, so switching a filter or chip feels like a fresh reveal
+        // instead of an instant content swap.
+        feedList.scheduleLayoutAnimation()
+        pinsList.scheduleLayoutAnimation()
+        collectionsList.scheduleLayoutAnimation()
+
+        showEmptyState(emptyView, buildFeedRows().isEmpty(), isHomeEmpty = true)
+        showEmptyState(pinsEmptyView, storage.items.none { it.pinned }, isHomeEmpty = false)
+    }
+
+    // Fades the empty-state block in only on the gone-to-visible
+    // transition (not replayed on every refresh while already empty), and
+    // hides it instantly when content shows up, no need to animate that.
+    private fun showEmptyState(view: View, shouldShow: Boolean, isHomeEmpty: Boolean) {
+        val wasShowing = if (isHomeEmpty) emptyViewShowing else pinsEmptyViewShowing
+
+        if (shouldShow && !wasShowing) {
+            view.alpha = 0f
+            view.visibility = View.VISIBLE
+            view.animate().alpha(1f).setDuration(200).start()
+        } else if (!shouldShow) {
+            view.visibility = View.GONE
+        } else {
+            view.visibility = View.VISIBLE
+        }
+
+        if (isHomeEmpty) emptyViewShowing = shouldShow else pinsEmptyViewShowing = shouldShow
     }
 
     private fun deleteItem(item: Item) {

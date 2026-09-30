@@ -101,6 +101,31 @@ Five destinations via the bottom nav:
 - **Settings** — app version, a short privacy note, and a shortcut into
   Collections for management.
 
+## Animations
+
+Kept deliberately understated, nothing longer than ~220ms, no bounce/
+overshoot interpolators:
+
+- Lists (Home, Pinned, Collections) cascade in with a quick fall+fade
+  whenever the data actually changes, not just on first load, via a
+  `LayoutAnimationController` replayed with `scheduleLayoutAnimation()`
+  after every `notifyDataSetChanged()`.
+- Switching bottom-nav screens crossfades instead of snapping.
+- The section label ("RECENT" / "NOTES" / etc.) crossfades too, but only
+  when the label actually changes, not on every keystroke while searching.
+- The floating capture button has a real ripple and a press-in squish
+  (scales down on finger-down, springs back on release), matching how a
+  Material FAB actually behaves.
+- Tapping a star gives it a quick pop. Same for the checkbox on a task.
+- The empty state fades in the first time it appears, not every refresh.
+- Every chip, nav item, card button, and row now has proper ripple touch
+  feedback (`selectableItemBackground`), which it was missing entirely
+  before, taps just fired with zero visual response.
+
+One real bug got fixed in the process: marking a task done never actually
+changed how the card looked before, just the checkbox. It's now properly
+struck through and dimmed.
+
 ## What's in vs left out
 
 In: notes, links with a domain-aware card, tasks with checkboxes, starring

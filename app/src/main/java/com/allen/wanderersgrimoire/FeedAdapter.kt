@@ -1,5 +1,6 @@
 package com.allen.wanderersgrimoire
 
+import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,6 +31,24 @@ class FeedAdapter(
         private const val TYPE_HEADER = 0
         private const val TYPE_ITEM = 1
         private const val TYPE_IMAGE_TILE = 2
+
+        // A quick scale pop for star/checkbox taps. Rebind only touches text
+        // and paint flags, never scaleX/scaleY, so this keeps playing on the
+        // same View even though notifyDataSetChanged() rebinds almost
+        // immediately after the tap.
+        fun bounce(view: View) {
+            view.animate().cancel()
+            view.scaleX = 1f
+            view.scaleY = 1f
+            view.animate()
+                .scaleX(1.35f)
+                .scaleY(1.35f)
+                .setDuration(90)
+                .withEndAction {
+                    view.animate().scaleX(1f).scaleY(1f).setDuration(90).start()
+                }
+                .start()
+        }
     }
 
     class HeaderVH(view: View) : RecyclerView.ViewHolder(view) {
@@ -119,7 +138,10 @@ class FeedAdapter(
         }
 
         holder.star.text = if (item.pinned) "★" else "☆"
-        holder.star.setOnClickListener { onTogglePinned(item) }
+        holder.star.setOnClickListener {
+            bounce(holder.star)
+            onTogglePinned(item)
+        }
 
         holder.caption.text = item.title
         holder.itemView.setOnClickListener { onEdit(item) }
@@ -142,17 +164,33 @@ class FeedAdapter(
         }
         holder.title.text = "$typeIcon ${item.title}"
 
+        // A done task reads as struck-through and dimmed. This was missing
+        // entirely before, checking a task changed nothing but the box.
+        if (item.type == "task" && item.done) {
+            holder.title.paintFlags = holder.title.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+            holder.title.alpha = 0.55f
+        } else {
+            holder.title.paintFlags = holder.title.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+            holder.title.alpha = 1f
+        }
+
         if (item.type == "task") {
             holder.check.visibility = View.VISIBLE
             holder.check.setOnCheckedChangeListener(null)
             holder.check.isChecked = item.done
-            holder.check.setOnCheckedChangeListener { _, _ -> onToggleDone(item) }
+            holder.check.setOnCheckedChangeListener { _, _ ->
+                bounce(holder.check)
+                onToggleDone(item)
+            }
         } else {
             holder.check.visibility = View.GONE
         }
 
         holder.star.text = if (item.pinned) "★" else "☆"
-        holder.star.setOnClickListener { onTogglePinned(item) }
+        holder.star.setOnClickListener {
+            bounce(holder.star)
+            onTogglePinned(item)
+        }
 
         if (item.type == "link" && item.url.isNotBlank()) {
             holder.subtitle.visibility = View.VISIBLE
