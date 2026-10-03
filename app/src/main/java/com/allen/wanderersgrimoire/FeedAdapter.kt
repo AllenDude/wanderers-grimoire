@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 
 // A feed row is either a day-group header or an actual item, so headers can
@@ -18,6 +17,7 @@ sealed class FeedRow {
 }
 
 class FeedAdapter(
+    private val theme: Theme,
     private val getRows: () -> List<FeedRow>,
     private val getFolderName: (String?) -> String?,
     private val onToggleDone: (Item) -> Unit,
@@ -57,6 +57,7 @@ class FeedAdapter(
 
     class ItemVH(view: View) : RecyclerView.ViewHolder(view) {
         val strip: View = view.findViewById(R.id.typeStrip)
+        val typeIcon: ImageView = view.findViewById(R.id.typeIcon)
         val check: CheckBox = view.findViewById(R.id.taskCheck)
         val title: TextView = view.findViewById(R.id.itemTitle)
         val star: TextView = view.findViewById(R.id.starBtn)
@@ -125,6 +126,23 @@ class FeedAdapter(
 
     private fun bindHeader(holder: HeaderVH, label: String) {
         holder.label.text = label
+        holder.label.setTextColor(theme.accent)
+    }
+
+    // Per-type accent: used for the strip, the type icon, and link text.
+    // Per-type surface: a distinct, muted card-background tint so a note,
+    // a link, and a task read as visually different kinds of thing, not
+    // just a colored sliver on an otherwise identical card.
+    private fun accentFor(type: String): Int = when (type) {
+        "link" -> theme.secondary
+        "task" -> theme.primary
+        else -> theme.accent
+    }
+
+    private fun surfaceFor(type: String): Int = when (type) {
+        "link" -> theme.linkSurface
+        "task" -> theme.taskSurface
+        else -> theme.noteSurface
     }
 
     private fun bindTile(holder: TileVH, item: Item) {
@@ -138,6 +156,7 @@ class FeedAdapter(
         }
 
         holder.star.text = if (item.pinned) "★" else "☆"
+        holder.star.setTextColor(theme.accent)
         holder.star.setOnClickListener {
             bounce(holder.star)
             onTogglePinned(item)
@@ -149,20 +168,21 @@ class FeedAdapter(
 
     private fun bindItem(holder: ItemVH, item: Item) {
         val ctx = holder.itemView.context
+        val accent = accentFor(item.type)
 
-        val colorRes = when (item.type) {
-            "link" -> R.color.link
-            "task" -> R.color.task
-            else -> R.color.note
-        }
-        holder.strip.setBackgroundColor(ContextCompat.getColor(ctx, colorRes))
+        holder.itemView.background = ThemeManager.cardDrawable(ctx, theme, surfaceFor(item.type))
+        holder.strip.setBackgroundColor(accent)
 
-        val typeIcon = when (item.type) {
-            "link" -> "🔗"
-            "task" -> "✅"
-            else -> "📝"
+        val iconRes = when (item.type) {
+            "link" -> R.drawable.ic_link
+            "task" -> R.drawable.ic_task
+            else -> R.drawable.ic_note
         }
-        holder.title.text = "$typeIcon ${item.title}"
+        holder.typeIcon.setImageResource(iconRes)
+        holder.typeIcon.setColorFilter(accent)
+
+        holder.title.text = item.title
+        holder.title.setTextColor(theme.text)
 
         // A done task reads as struck-through and dimmed. This was missing
         // entirely before, checking a task changed nothing but the box.
@@ -187,6 +207,7 @@ class FeedAdapter(
         }
 
         holder.star.text = if (item.pinned) "★" else "☆"
+        holder.star.setTextColor(theme.accent)
         holder.star.setOnClickListener {
             bounce(holder.star)
             onTogglePinned(item)
@@ -194,7 +215,8 @@ class FeedAdapter(
 
         if (item.type == "link" && item.url.isNotBlank()) {
             holder.subtitle.visibility = View.VISIBLE
-            holder.subtitle.text = "🌐 " + FeedUtils.domainOf(item.url)
+            holder.subtitle.text = FeedUtils.domainOf(item.url)
+            holder.subtitle.setTextColor(theme.secondary)
             holder.subtitle.setOnClickListener { onOpenLink(item.url) }
         } else {
             holder.subtitle.visibility = View.GONE
@@ -204,6 +226,7 @@ class FeedAdapter(
         if (item.body.isNotBlank()) {
             holder.body.visibility = View.VISIBLE
             holder.body.text = item.body
+            holder.body.setTextColor(theme.textDim)
         } else {
             holder.body.visibility = View.GONE
         }
@@ -212,13 +235,16 @@ class FeedAdapter(
         if (folderName != null) {
             holder.folderTag.visibility = View.VISIBLE
             holder.folderTag.text = folderName
+            holder.folderTag.setTextColor(theme.textDim)
         } else {
             holder.folderTag.visibility = View.GONE
         }
 
         holder.time.text = FeedUtils.timeLabel(item.createdAt)
+        holder.time.setTextColor(theme.textDim)
 
         holder.edit.setOnClickListener { onEdit(item) }
         holder.delete.setOnClickListener { onDelete(item) }
+        holder.delete.setTextColor(theme.danger)
     }
 }
